@@ -1,0 +1,25 @@
+# Keep the Docker build context small — node_modules and build artifacts are
+# produced inside the image and only bloat the context transfer otherwise.
+node_modules
+**/node_modules
+.git
+**/.git
+**/.next
+**/dist
+**/*.tsbuildinfo
+storage
+**/storage
+uploads
+**/uploads
+coverage
+**/coverage
+.env
+.env.*
+!.env.example
+*.log
+npm-debug.log*
+.claude
+.vscode
+.idea
+.DS_Store
+Thumbs.db

@@ -1,0 +1,121 @@
+# ============================================================================
+# Render Blueprint — one-click deployment of the full QuantDesk stack.
+#
+# Creates three resources on Render:
+#   · quantdesk-postgres   (managed PostgreSQL, free plan)
+#   · quantdesk-api        (Express API via apps/api/Dockerfile)
+#   · quantdesk-web        (Next.js via apps/web/Dockerfile)
+#
+# To deploy: Render Dashboard → "New +" → Blueprint → connect this repo.
+# Render reads this file and provisions everything below.
+#
+# AFTER deploying (must do):
+#   1. Rotate the three placeholder secrets below in each service's
+#      "Environment" tab:
+#        - JWT_ACCESS_SECRET / JWT_REFRESH_SECRET   (≥ 32 chars each)
+#        - ENCRYPTION_KEY                            (64 hex chars: openssl rand -hex 32)
+#      A public repo means anyone can read the placeholders — treat them as
+#      already-compromised and replace before real use.
+#   2. Optional: set ANTHROPIC_API_KEY on quantdesk-api to enable AI narration.
+#   3. Create the admin account (run once in the API service shell):
+#        SEED_ADMIN_EMAIL=you@example.com SEED_ADMIN_PASSWORD='strong-password-123' npm run seed
+#
+# Redis is intentionally optional: the API degrades gracefully without it
+# (caching falls back to live fetch, rate-limit and scheduler locks fail open,
+# WebSocket fan-out stays local). On Render's free plan a single instance makes
+# multi-instance Redis coordination moot. To add it later, uncomment the
+# `redis` block at the bottom and set REDIS_URL accordingly.
+# ============================================================================
+
+databases:
+  - name: quantdesk-postgres
+    plan: free
+    databaseName: quantdesk
+    user: quantdesk
+
+services:
+  # ------------------------------------------------------------------ API --
+  - type: web
+    name: quantdesk-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./apps/api/Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_HOST
+        value: 0.0.0.0
+      # API_PORT is not set: the API falls back to Render's injected `PORT`.
+      - key: TRUST_PROXY
+        value: "1"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: quantdesk-postgres
+          property: connectionString
+      - key: DATABASE_SSL
+        value: "true"
+
+      # Origin that may call the API (the web app). CSRF + CORS both check it.
+      - key: WEB_ORIGIN
+        value: https://quantdesk-web.onrender.com
+      # Any additional allowed origins, comma-separated (e.g. a staging URL).
+      - key: CORS_EXTRA_ORIGINS
+        value: ""
+
+      # --- Secrets: CHANGE THESE in the Dashboard after deploy --------------
+      - key: JWT_ACCESS_SECRET
+        value: change-me-please-replace-with-32-plus-random-chars-AAAAAAAAAAAAAAAA
+      - key: JWT_REFRESH_SECRET
+        value: change-me-please-replace-with-32-plus-random-chars-BBBBBBBBBBBBBBBB
+      - key: ENCRYPTION_KEY
+        value: 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+      # Live crypto needs no API key. Non-crypto symbols fall back to synthetic.
+      - key: MARKET_BINANCE_ENABLED
+        value: "true"
+      - key: MARKET_BYBIT_ENABLED
+        value: "true"
+      - key: MARKET_ALLOW_SYNTHETIC
+        value: "true"
+
+      - key: NEWS_FINNHUB_ENABLED
+        value: "true"
+      - key: FEAR_GREED_ENABLED
+        value: "true"
+      - key: SCHEDULER_ENABLED
+        value: "true"
+
+      # --- Optional: enable AI narration (blank = deterministic-only) -------
+      - key: ANTHROPIC_API_KEY
+        value: ""
+      - key: LOG_LEVEL
+        value: info
+
+  # ------------------------------------------------------------------ WEB --
+  - type: web
+    name: quantdesk-web
+    runtime: docker
+    plan: free
+    dockerfilePath: ./apps/web/Dockerfile
+    autoDeploy: true
+    envVars:
+      # NEXT_PUBLIC_* are baked into the client bundle at build time. Render
+      # passes service env vars to Docker as build args, so the web Dockerfile's
+      # `ARG NEXT_PUBLIC_*` picks these up during `next build`.
+      - key: NEXT_PUBLIC_API_URL
+        value: https://quantdesk-api.onrender.com
+      - key: NEXT_PUBLIC_WS_URL
+        value: wss://quantdesk-api.onrender.com/ws
+      - key: NEXT_PUBLIC_SITE_URL
+        value: https://quantdesk-web.onrender.com
+      - key: NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        value: ""
+
+# --- Optional managed Redis (paid on Render). Uncomment to provision it, then
+# --- add `- key: REDIS_URL` / `fromDatabase: { name: quantdesk-redis,
+# --- property: connectionString }` to the api service's envVars.
+# redis:
+#   - name: quantdesk-redis
+#     plan: starter

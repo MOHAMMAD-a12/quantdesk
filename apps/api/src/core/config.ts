@@ -34,7 +34,10 @@ const optionalStr = z
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  API_PORT: z.coerce.number().int().min(1).max(65535).default(4000),
+  // `PORT` is the PaaS convention (Render, Heroku, Fly) that injects the
+  // listening port at runtime. Prefer `API_PORT` when set, else fall back to
+  // `PORT`, else 4000 for local development.
+  API_PORT: z.coerce.number().int().min(1).max(65535).default(Number(process.env.PORT) || 4000),
   API_HOST: z.string().default('0.0.0.0'),
   WEB_ORIGIN: z.string().url().default('http://localhost:3000'),
   CORS_EXTRA_ORIGINS: z
