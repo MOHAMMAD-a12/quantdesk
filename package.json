@@ -12,6 +12,8 @@
   },
   "scripts": {
     "build": "npm run build --workspace=@quantdesk/shared && npm run build --workspace=@quantdesk/api && npm run build --workspace=@quantdesk/web",
+    "start": "npm run build --workspace=@quantdesk/shared && npm run build --workspace=@quantdesk/api && npm run start --workspace=@quantdesk/api",
+    "start:web": "npm run build --workspace=@quantdesk/shared && npm run build --workspace=@quantdesk/web && npm run start --workspace=@quantdesk/web",
     "dev": "concurrently -n api,web -c cyan,magenta \"npm:dev:api\" \"npm:dev:web\"",
     "dev:api": "npm run dev --workspace=@quantdesk/api",
     "dev:web": "npm run dev --workspace=@quantdesk/web",
