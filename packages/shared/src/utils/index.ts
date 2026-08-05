@@ -198,7 +198,9 @@ export function barsToMs(bars: number, tf: Timeframe): number {
  * even when `@types/node` is absent (e.g. a dependency-omitted Render/CI build).
  * The shape is the small subset this helper needs.
  */
-const timer = globalThis as { setTimeout: (handler: () => void, timeout?: number) => unknown };
+const timer = globalThis as unknown as {
+  setTimeout: (handler: () => void, timeout?: number) => unknown;
+};
 
 /** Sleep helper for backoff loops. */
 export function sleep(ms: number): Promise<void> {
