@@ -1,0 +1,18 @@
+# Caddy reverse proxy with automatic HTTPS (Let's Encrypt).
+#
+# `DOMAIN` is injected from .env by docker-compose.prod.yml.
+#   YOUR-DOMAIN.com    -> Next.js web  (:3000)
+#   api.YOUR-DOMAIN.com -> Express API (:4000)
+#
+# Before Caddy starts, both A records must point at this server's IP, or
+# certificate issuance will fail (Caddy retries automatically once DNS resolves).
+
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy web:3000
+}
+
+api.{$DOMAIN} {
+	encode gzip
+	reverse_proxy api:4000
+}
