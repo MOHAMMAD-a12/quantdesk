@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --font-sans: Arial, Helvetica, sans-serif;
+    --canvas: 222 31% 7%;
+    --panel: 222 25% 10%;
+    --panel-raised: 222 22% 13%;
+    --border: 220 18% 22%;
+    --text: 210 40% 96%;
+    --muted: 218 15% 65%;
+    --brand: 211 77% 56%;
+    --positive: 122 86% 34%;
+    --negative: 0 60% 53%;
+    --warning: 40 95% 54%;
+    --radius: 0.75rem;
+
+    /* Data-viz roles: selected dark ramp, never reused as statuses. */
+    --series-1: #3987e5;
+    --series-2: #d95926;
+    --series-3: #199e70;
+    --series-4: #c98500;
+    --series-5: #d55181;
+    --grid: #2c2c2a;
+    --chart-ink: #c3c2b7;
+  }
+
+  :root.light {
+    color-scheme: light;
+    --canvas: 45 14% 97%;
+    --panel: 0 0% 100%;
+    --panel-raised: 45 18% 98%;
+    --border: 42 9% 84%;
+    --text: 0 0% 4%;
+    --muted: 48 3% 42%;
+    --brand: 211 68% 50%;
+    --positive: 122 100% 19%;
+    --negative: 0 58% 50%;
+    --warning: 40 86% 47%;
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --series-3: #1baf7a;
+    --series-4: #eda100;
+    --series-5: #e87ba4;
+    --grid: #e1e0d9;
+    --chart-ink: #52514e;
+  }
+
+  * { @apply border-border; }
+  html { min-width: 320px; background: hsl(var(--canvas)); }
+  body { @apply min-h-screen bg-canvas font-sans text-text antialiased; }
+  button, input, select, textarea { font: inherit; }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { @apply outline-none ring-2 ring-brand ring-offset-2 ring-offset-canvas; }
+  ::selection { background: hsl(var(--brand) / .32); color: hsl(var(--text)); }
+}
+
+@layer components {
+  .panel { @apply rounded-xl border border-border bg-panel shadow-panel; }
+  .panel-header { @apply flex items-center justify-between gap-4 border-b border-border px-5 py-4; }
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[.16em] text-muted; }
+  .data-number { font-variant-numeric: tabular-nums; }
+  .grid-bg { background-image: linear-gradient(hsl(var(--border) / .28) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--border) / .28) 1px, transparent 1px); background-size: 24px 24px; }
+}

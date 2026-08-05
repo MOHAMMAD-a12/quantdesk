@@ -1,0 +1,31 @@
+{
+  "name": "quantdesk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Trading Analysis Platform — real-time market intelligence, SMC/ICT analysis, and AI signal generation",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "npm run build --workspace=@quantdesk/shared && npm run build --workspace=@quantdesk/api && npm run build --workspace=@quantdesk/web",
+    "dev": "concurrently -n api,web -c cyan,magenta \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm run dev --workspace=@quantdesk/api",
+    "dev:web": "npm run dev --workspace=@quantdesk/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "migrate": "npm run migrate --workspace=@quantdesk/api",
+    "seed": "npm run seed --workspace=@quantdesk/api",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "typescript": "^5.7.2"
+  }
+}
