@@ -3,7 +3,11 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "composite": true
+    "composite": true,
+    // `src/utils` uses Node globals (setTimeout in `sleep`). Pin the ambient
+    // types explicitly instead of relying on whatever happens to be hoisted to
+    // the root node_modules, which differs between local npm and Render's install.
+    "types": ["node"]
   },
   "include": ["src/**/*.ts"]
 }
