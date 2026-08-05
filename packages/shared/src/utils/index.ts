@@ -191,9 +191,18 @@ export function barsToMs(bars: number, tf: Timeframe): number {
   return bars * TIMEFRAME_MS[tf];
 }
 
+/**
+ * Structural type for the timer global.
+ *
+ * Referenced rather than the ambient `setTimeout` so the shared package builds
+ * even when `@types/node` is absent (e.g. a dependency-omitted Render/CI build).
+ * The shape is the small subset this helper needs.
+ */
+const timer = globalThis as { setTimeout: (handler: () => void, timeout?: number) => unknown };
+
 /** Sleep helper for backoff loops. */
 export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise((resolve) => timer.setTimeout(resolve, ms));
 }
 
 /** Split an array into chunks of at most `size`. */
